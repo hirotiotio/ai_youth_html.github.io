@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华容道数字拼图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .setup-screen, .game-screen {
+            display: none;
+        }
+
+        .setup-screen.active, .game-screen.active {
+            display: block;
+        }
+
+        .setting-group {
+            margin-bottom: 25px;
+        }
+
+        .setting-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .option-btn.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .start-btn:active {
+            transform: translateY(0);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .game-board {
+            display: grid;
+            gap: 8px;
+            margin: 20px auto;
+            max-width: 400px;
+            aspect-ratio: 1;
+        }
+
+        .tile {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tile:hover {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tile:active {
+            transform: scale(0.9);
+        }
+
+        .tile.empty {
+            background: #e0e0e0;
+            cursor: default;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tile.empty:hover {
+            transform: none;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .reset-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #ff5252;
+        }
+
+        .back-btn {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .back-btn:hover {
+            background: #7f8c8d;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 90%;
+            animation: modalPop 0.3s;
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .modal-content p {
+            font-size: 18px;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .modal-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .tile {
+                font-size: 24px;
+            }
+
+            .option-btn {
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 华容道数字拼图</h1>
+        
+        <!-- 设置界面 -->
+        <div class="setup-screen active">
+            <div class="setting-group">
+                <label>选择难度：</label>
+                <div class="button-group">
+                    <button class="option-btn selected" data-difficulty="easy">简单</button>
+                    <button class="option-btn" data-difficulty="medium">中等</button>
+                    <button class="option-btn" data-difficulty="hard">困难</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>选择棋盘大小：</label>
+                <div class="button-group">
+                    <button class="option-btn selected" data-size="3">3×3</button>
+                    <button class="option-btn" data-size="4">4×4</button>
+                    <button class="option-btn" data-size="5">5×5</button>
+                </div>
+            </div>
+
+            <button class="start-btn" onclick="startGame()">开始游戏</button>
+        </div>
+
+        <!-- 游戏界面 -->
+        <div class="game-screen">
+            <div class="game-info">
+                <div class="info-item">
+                    <div class="info-label">时间</div>
+                    <div class="info-value" id="timer">00:00</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">移动次数</div>
+                    <div class="info-value" id="moves">0</div>
+                </div>
+            </div>
+
+            <div class="game-board" id="gameBoard"></div>
+
+            <div class="control-buttons">
+                <button class="control-btn reset-btn" onclick="resetGame()">重新开始</button>
+                <button class="control-btn back-btn" onclick="backToSetup()">返回设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 胜利弹窗 -->
+    <div class="modal" id="winModal">
+        <div class="modal-content">
+            <h2>🎉 恭喜你！</h2>
+            <p>挑战成功完成！</p>
+            <p>用时：<span id="finalTime"></span></p>
+            <p>移动次数：<span id="finalMoves"></span></p>
+            <button class="modal-btn" onclick="closeModal()">继续挑战</button>
+        </div>
+    </div>
+
+    <script>
+        let difficulty = 'easy';
+        let boardSize = 3;
+        let board = [];
+        let emptyPos = { row: 0, col: 0 };
+        let moves = 0;
+        let seconds = 0;
+        let timerInterval = null;
+        let isGameActive = false;
+
+        // 难度对应的打乱次数
+        const shuffleSteps = {
+            easy: 20,
+            medium: 50,
+            hard: 100
+        };
+
+        // 选项按钮点击事件
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const group = this.parentElement;
+                group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+
+                if (this.dataset.difficulty) {
+                    difficulty = this.dataset.difficulty;
+                } else if (this.dataset.size) {
+                    boardSize = parseInt(this.dataset.size);
+                }
+            });
+        });
+
+        function startGame() {
+            document.querySelector('.setup-screen').classList.remove('active');
+            document.querySelector('.game-screen').classList.add('active');
+            initGame();
+        }
+
+        function initGame() {
+            moves = 0;
+            seconds = 0;
+            isGameActive = true;
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('timer').textContent = '00:00';
+
+            // 初始化棋盘
+            board = [];
+            let num = 1;
+            for (let i = 0; i < boardSize; i++) {
+                board[i] = [];
+                for (let j = 0; j < boardSize; j++) {
+                    board[i][j] = num++;
+                }
+            }
+            board[boardSize - 1][boardSize - 1] = 0;
+            emptyPos = { row: boardSize - 1, col: boardSize - 1 };
+
+            // 打乱棋盘
+            shuffleBoard();
+
+            // 渲染棋盘
+            renderBoard();
+
+            // 开始计时
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function shuffleBoard() {
+            const steps = shuffleSteps[difficulty];
+            const directions = [
+                { row: -1, col: 0 },
+                { row: 1, col: 0 },
+                { row: 0, col: -1 },
+                { row: 0, col: 1 }
+            ];
+
+            for (let i = 0; i < steps; i++) {
+                const validMoves = [];
+                directions.forEach(dir => {
+                    const newRow = emptyPos.row + dir.row;
+                    const newCol = emptyPos.col + dir.col;
+                    if (newRow >= 0 && newRow < boardSize && newCol >= 0 && newCol < boardSize) {
+                        validMoves.push({ row: newRow, col: newCol });
+                    }
+                });
+
+                const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                board[emptyPos.row][emptyPos.col] = board[randomMove.row][randomMove.col];
+                board[randomMove.row][randomMove.col] = 0;
+                emptyPos = randomMove;
+            }
+        }
+
+        function renderBoard() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+            gameBoard.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+            gameBoard.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`;
+
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    
+                    if (board[i][j] === 0) {
+                        tile.classList.add('empty');
+                    } else {
+                        tile.textContent = board[i][j];
+                        tile.addEventListener('click', () => moveTile(i, j));
+                    }
+                    
+                    gameBoard.appendChild(tile);
+                }
+            }
+        }
+
+        function moveTile(row, col) {
+            if (!isGameActive) return;
+
+            const rowDiff = Math.abs(row - emptyPos.row);
+            const colDiff = Math.abs(col - emptyPos.col);
+
+            if ((rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1)) {
+                board[emptyPos.row][emptyPos.col] = board[row][col];
+                board[row][col] = 0;
+                emptyPos = { row, col };
+
+                moves++;
+                document.getElementById('moves').textContent = moves;
+
+                renderBoard();
+                checkWin();
+            }
+        }
+
+        function checkWin() {
+            let num = 1;
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if (i === boardSize - 1 && j === boardSize - 1) {
+                        if (board[i][j] !== 0) return false;
+                    } else {
+                        if (board[i][j] !== num) return false;
+                    }
+                    num++;
+                }
+            }
+
+            // 游戏胜利
+            isGameActive = false;
+            clearInterval(timerInterval);
+            showWinModal();
+            return true;
+        }
+
+        function updateTimer() {
+            if (!isGameActive) return;
+            seconds++;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('timer').textContent = 
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function showWinModal() {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('finalTime').textContent = 
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            document.getElementById('finalMoves').textContent = moves;
+            document.getElementById('winModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('winModal').classList.remove('active');
+        }
+
+        function resetGame() {
+            if (timerInterval) clearInterval(timerInterval);
+            initGame();
+        }
+
+        function backToSetup() {
+            if (timerInterval) clearInterval(timerInterval);
+            isGameActive = false;
+            document.querySelector('.game-screen').classList.remove('active');
+            document.querySelector('.setup-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
