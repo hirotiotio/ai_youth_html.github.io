@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>宠物养成小游戏</title>
+    <title>萌宠养成计划</title>
     <style>
         * {
             margin: 0;
@@ -12,470 +12,707 @@
         }
         
         body {
-            font-family: 'Comic Sans MS', 'Microsoft YaHei', cursive, sans-serif;
+            font-family: 'Comic Sans MS', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #fff5f5 0%, #f0f8ff 50%, #fff0f5 100%);
             min-height: 100vh;
-            background: linear-gradient(135deg, #fff5e6 0%, #ffe4d4 50%, #ffd4c4 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 15px;
+            padding: 10px;
         }
         
-        .game-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 25px;
-            padding: 20px;
-            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.2);
+        .container {
             width: 100%;
-            max-width: 380px;
-            text-align: center;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(255, 182, 193, 0.4);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .screen {
+            display: none;
+            padding: 24px;
+            min-height: 500px;
+        }
+        
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         h1 {
-            color: #ff6b6b;
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 0px #ffe4e4;
+            color: #ff6b9d;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 0 #ffe4ec;
         }
         
+        h2 {
+            color: #9b59b6;
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+        }
+        
+        .pet-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        .pet-option {
+            background: #fff;
+            border: 3px solid #eee;
+            border-radius: 16px;
+            padding: 16px 8px;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .pet-option:hover {
+            transform: scale(1.08);
+            border-color: #ffb6c1;
+            box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
+        }
+        
+        .pet-option.selected {
+            border-color: #ff6b9d;
+            background: #fff0f5;
+            box-shadow: 0 4px 20px rgba(255, 107, 157, 0.4);
+        }
+        
+        .pet-option span {
+            display: block;
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 4px;
+        }
+        
+        .input-group {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            color: #666;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #ff6b9d;
+        }
+        
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.5);
+        }
+        
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #a8e6cf, #88d8b0);
+            color: white;
+            box-shadow: 0 4px 15px rgba(136, 216, 176, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff7675, #d63031);
+            color: white;
+            box-shadow: 0 4px 15px rgba(214, 48, 49, 0.4);
+        }
+        
+        /* Game Screen Styles */
         .pet-display {
-            font-size: 80px;
-            margin: 15px 0;
-            transition: transform 0.3s, filter 0.3s;
-            cursor: default;
-            user-select: none;
+            text-align: center;
+            margin-bottom: 20px;
         }
         
-        .pet-display.bounce {
-            animation: bounce 0.5s ease;
+        .pet-emoji {
+            font-size: 6rem;
+            animation: bounce 2s ease-in-out infinite;
+            display: inline-block;
         }
         
-        .pet-display.shake {
-            animation: shake 0.5s ease;
+        .pet-emoji.dead {
+            animation: none;
+            filter: grayscale(1);
+            transform: rotate(90deg);
+        }
+        
+        .pet-emoji.sad {
+            animation: shake 0.5s ease-in-out infinite;
         }
         
         @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
         
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
         
-        .stats {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin: 15px 0;
-        }
-        
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .stat-label {
-            font-size: 0.85rem;
-            color: #666;
-            width: 45px;
-            text-align: left;
+        .pet-name-display {
+            font-size: 1.5rem;
+            color: #333;
+            margin-top: 10px;
             font-weight: bold;
         }
         
+        .stats-container {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            margin-bottom: 12px;
+        }
+        
+        .stat-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
         .stat-bar {
-            flex: 1;
-            height: 18px;
-            background: #f0f0f0;
+            width: 100%;
+            height: 20px;
+            background: #eee;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
         }
         
         .stat-fill {
             height: 100%;
             border-radius: 10px;
-            transition: width 0.5s ease, background 0.3s ease;
-            position: relative;
+            transition: width 0.5s ease;
         }
         
-        .stat-fill::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 5px;
-            right: 5px;
-            height: 4px;
-            background: rgba(255,255,255,0.4);
-            border-radius: 2px;
+        .stat-fill.fullness {
+            background: linear-gradient(90deg, #ff9a9e, #fecfef);
         }
         
-        .stat-fill.hunger { 
-            background: linear-gradient(90deg, #ff9a9e, #fecfef); 
-        }
-        .stat-fill.happiness { 
-            background: linear-gradient(90deg, #a8edea, #fed6e3); 
-        }
-        .stat-fill.cleanliness { 
-            background: linear-gradient(90deg, #d299c2, #fef9d7); 
+        .stat-fill.happiness {
+            background: linear-gradient(90deg, #a8edea, #fed6e3);
         }
         
-        .stat-fill.low {
+        .stat-fill.cleanliness {
+            background: linear-gradient(90deg, #d299c2, #fef9d7);
+        }
+        
+        .stat-fill.danger {
             background: linear-gradient(90deg, #ff6b6b, #ee5a5a) !important;
         }
         
-        .stat-value {
-            font-size: 0.8rem;
-            color: #999;
-            width: 35px;
-            text-align: right;
-            font-weight: bold;
-        }
-        
-        .buttons {
+        .actions {
             display: flex;
             gap: 10px;
+            width: 100%;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 15px;
         }
         
-        .btn {
-            padding: 12px 24px;
+        .action-btn {
+            flex: 1;
+            min-width: 80px;
+            max-width: 110px;
+            padding: 12px 8px;
             border: none;
-            border-radius: 20px;
-            font-size: 0.95rem;
+            border-radius: 16px;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-            font-weight: bold;
-            min-width: 90px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
         }
         
-        .btn:disabled {
-            opacity: 0.4;
+        .action-btn .icon {
+            font-size: 1.5rem;
+        }
+        
+        .action-btn.feed {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            color: #8b4513;
+        }
+        
+        .action-btn.play {
+            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+            color: #1e3a8a;
+        }
+        
+        .action-btn.clean {
+            background: linear-gradient(135deg, #d4fc79, #96e6a1);
+            color: #166534;
+        }
+        
+        .action-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none !important;
         }
         
-        .btn-feed { 
-            background: linear-gradient(135deg, #ff6b6b, #ee5a5a); 
-            color: white; 
-        }
-        .btn-play { 
-            background: linear-gradient(135deg, #4ecdc4, #44a08d); 
-            color: white; 
-        }
-        .btn-clean { 
-            background: linear-gradient(135deg, #45b7d1, #3498db); 
-            color: white; 
-        }
-        
-        .btn:hover:not(:disabled) {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
-        
-        .btn:active:not(:disabled) {
-            transform: translateY(-1px) scale(1.02);
-        }
-        
-        .btn-restart { 
-            background: linear-gradient(135deg, #96ceb4, #88b04b); 
-            color: white; 
-            margin-top: 15px;
-            width: 100%;
-            max-width: 200px;
+        .restart-btn {
+            margin-top: 20px;
             display: none;
         }
         
-        .btn-restart.show {
-            display: inline-block;
+        .restart-btn.show {
+            display: block;
         }
         
-        .message {
-            margin-top: 12px;
-            font-size: 0.9rem;
-            min-height: 22px;
-            color: #888;
+        .status-message {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            display: none;
         }
         
-        .status-sad { color: #ff6b6b; font-weight: bold; }
-        .status-happy { color: #4ecdc4; font-weight: bold; }
-        .status-dead { color: #666; font-weight: bold; }
+        .status-message.show {
+            display: block;
+        }
         
-        .progress-info {
-            font-size: 0.75rem;
-            color: #aaa;
-            margin-top: 10px;
+        .status-message.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-message.happy {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-message.dead {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .timer-info {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>🐱 我的小猫咪</h1>
-        
-        <div class="pet-display" id="pet">🐱</div>
-        
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-label">🍖 饱食</span>
-                <div class="stat-bar">
-                    <div class="stat-fill hunger" id="hungerBar" style="width: 100%"></div>
-                </div>
-                <span class="stat-value" id="hungerValue">100</span>
+    <div class="container">
+        <!-- Selection Screen -->
+        <div class="screen active" id="selectionScreen">
+            <h1>🐾 萌宠养成计划 🐾</h1>
+            <h2>选择你的宠物</h2>
+            <div class="pet-grid" id="petGrid">
+                <div class="pet-option" data-pet="🐱"><span>小猫咪</span></div>
+                <div class="pet-option" data-pet="🐶"><span>小狗狗</span></div>
+                <div class="pet-option" data-pet="🐰"><span>小兔兔</span></div>
+                <div class="pet-option" data-pet="🐼"><span>小熊猫</span></div>
+                <div class="pet-option" data-pet="🐸"><span>小青蛙</span></div>
+                <div class="pet-option" data-pet="🦊"><span>小狐狸</span></div>
             </div>
-            
-            <div class="stat-item">
-                <span class="stat-label">🎾 快乐</span>
-                <div class="stat-bar">
-                    <div class="stat-fill happiness" id="happinessBar" style="width: 100%"></div>
-                </div>
-                <span class="stat-value" id="happinessValue">100</span>
+            <div class="input-group">
+                <label>给宠物起个名字吧：</label>
+                <input type="text" id="petNameInput" placeholder="输入名字" maxlength="10">
             </div>
-            
-            <div class="stat-item">
-                <span class="stat-label">🛁 清洁</span>
-                <div class="stat-bar">
-                    <div class="stat-fill cleanliness" id="cleanlinessBar" style="width: 100%"></div>
-                </div>
-                <span class="stat-value" id="cleanlinessValue">100</span>
-            </div>
+            <button class="btn btn-primary" id="startBtn">开始养成</button>
         </div>
         
-        <div class="buttons">
-            <button class="btn btn-feed" id="feedBtn" onclick="feed()">🍖 喂食</button>
-            <button class="btn btn-play" id="playBtn" onclick="play()">🎾 玩耍</button>
-            <button class="btn btn-clean" id="cleanBtn" onclick="clean()">🛁 清洁</button>
+        <!-- Game Screen -->
+        <div class="screen" id="gameScreen">
+            <h1>🏠 宠物之家</h1>
+            <div class="pet-display">
+                <div class="pet-emoji" id="petEmoji">🐱</div>
+                <div class="pet-name-display" id="petNameDisplay">小明</div>
+            </div>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-label">
+                        <span>🍖 饱食度</span>
+                        <span id="fullnessValue">100</span>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-fill fullness" id="fullnessBar" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">
+                        <span>😊 快乐度</span>
+                        <span id="happinessValue">100</span>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-fill happiness" id="happinessBar" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">
+                        <span>✨ 清洁度</span>
+                        <span id="cleanlinessValue">100</span>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-fill cleanliness" id="cleanlinessBar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="actions" id="actionButtons">
+                <button class="action-btn feed" onclick="feedPet()">
+                    <span class="icon">🍖</span>
+                    <span>喂食</span>
+                </button>
+                <button class="action-btn play" onclick="playPet()">
+                    <span class="icon">🎾</span>
+                    <span>玩耍</span>
+                </button>
+                <button class="action-btn clean" onclick="cleanPet()">
+                    <span class="icon">🛁</span>
+                    <span>清洁</span>
+                </button>
+            </div>
+            <div class="status-message" id="statusMessage"></div>
+            <button class="btn btn-danger restart-btn" id="restartBtn" onclick="restartGame()">🔄 重新开始</button>
+            <div class="timer-info">数值每5秒自动减少</div>
         </div>
-        
-        <button class="btn btn-restart" id="restartBtn" onclick="restart()">🔄 重新开始</button>
-        
-        <div class="message" id="message">小猫咪很开心！</div>
-        
-        <div class="progress-info">每5秒数值会自动减少哦~</div>
     </div>
-
+    
     <script>
-        const STORAGE_KEY = 'petGameData';
-        const DECREASE_INTERVAL = 5000;
-        const DECREASE_AMOUNT = 2;
-        
+        // Game State
         let gameState = {
-            hunger: 100,
+            petType: null,
+            petName: '',
+            fullness: 100,
             happiness: 100,
             cleanliness: 100,
-            isDead: false
+            isDead: false,
+            lastUpdate: Date.now()
         };
         
         let gameInterval = null;
         
+        // DOM Elements
+        const selectionScreen = document.getElementById('selectionScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const petGrid = document.getElementById('petGrid');
+        const petNameInput = document.getElementById('petNameInput');
+        const startBtn = document.getElementById('startBtn');
+        const petEmoji = document.getElementById('petEmoji');
+        const petNameDisplay = document.getElementById('petNameDisplay');
+        const actionButtons = document.getElementById('actionButtons');
+        const restartBtn = document.getElementById('restartBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        
+        // Initialize
         function init() {
             loadGame();
-            updateUI();
+            setupEventListeners();
+        }
+        
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Pet selection
+            petGrid.addEventListener('click', (e) => {
+                const option = e.target.closest('.pet-option');
+                if (option) {
+                    document.querySelectorAll('.pet-option').forEach(p => p.classList.remove('selected'));
+                    option.classList.add('selected');
+                    gameState.petType = option.dataset.pet;
+                }
+            });
+            
+            // Start button
+            startBtn.addEventListener('click', startGame);
+            
+            // Enter key for name input
+            petNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    startGame();
+                }
+            });
+        }
+        
+        // Start Game
+        function startGame() {
+            const name = petNameInput.value.trim() || '小可爱';
+            
+            if (!gameState.petType) {
+                alert('请先选择一个宠物！');
+                return;
+            }
+            
+            gameState.petName = name;
+            gameState.fullness = 100;
+            gameState.happiness = 100;
+            gameState.cleanliness = 100;
+            gameState.isDead = false;
+            gameState.lastUpdate = Date.now();
+            
+            saveGame();
+            showGameScreen();
             startGameLoop();
         }
         
-        function loadGame() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
-                    gameState = JSON.parse(saved);
-                } catch (e) {
-                    resetGame();
-                }
-            } else {
-                resetGame();
-            }
+        // Show Game Screen
+        function showGameScreen() {
+            selectionScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            
+            petEmoji.textContent = gameState.petType;
+            petEmoji.classList.remove('dead', 'sad');
+            petNameDisplay.textContent = gameState.petName;
+            
+            updateUI();
         }
         
-        function saveGame() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
-        }
-        
-        function resetGame() {
-            gameState = {
-                hunger: 100,
-                happiness: 100,
-                cleanliness: 100,
-                isDead: false
-            };
-        }
-        
+        // Game Loop
         function startGameLoop() {
             if (gameInterval) {
                 clearInterval(gameInterval);
             }
             
-            if (!gameState.isDead) {
-                gameInterval = setInterval(() => {
-                    decreaseStats();
-                }, DECREASE_INTERVAL);
-            }
-        }
-        
-        function decreaseStats() {
-            if (gameState.isDead) return;
-            
-            gameState.hunger = Math.max(0, gameState.hunger - DECREASE_AMOUNT);
-            gameState.happiness = Math.max(0, gameState.happiness - DECREASE_AMOUNT);
-            gameState.cleanliness = Math.max(0, gameState.cleanliness - DECREASE_AMOUNT);
-            
-            saveGame();
-            updateUI();
-            checkGameOver();
-        }
-        
-        function feed() {
-            if (gameState.isDead) return;
-            
-            gameState.hunger = Math.min(100, gameState.hunger + 15);
-            animatePet('bounce');
-            saveGame();
-            updateUI();
-        }
-        
-        function play() {
-            if (gameState.isDead) return;
-            
-            gameState.happiness = Math.min(100, gameState.happiness + 15);
-            gameState.hunger = Math.max(0, gameState.hunger - 5);
-            animatePet('bounce');
-            saveGame();
-            updateUI();
-        }
-        
-        function clean() {
-            if (gameState.isDead) return;
-            
-            gameState.cleanliness = Math.min(100, gameState.cleanliness + 15);
-            gameState.happiness = Math.max(0, gameState.happiness - 3);
-            animatePet('bounce');
-            saveGame();
-            updateUI();
-        }
-        
-        function restart() {
-            resetGame();
-            saveGame();
-            startGameLoop();
-            updateUI();
-        }
-        
-        function animatePet(animation) {
-            const pet = document.getElementById('pet');
-            pet.classList.remove('bounce', 'shake');
-            void pet.offsetWidth;
-            pet.classList.add(animation);
-            setTimeout(() => {
-                pet.classList.remove(animation);
-            }, 500);
-        }
-        
-        function checkGameOver() {
-            if (gameState.hunger <= 0 || gameState.happiness <= 0 || gameState.cleanliness <= 0) {
-                gameState.isDead = true;
-                if (gameInterval) {
-                    clearInterval(gameInterval);
-                    gameInterval = null;
-                }
+            gameInterval = setInterval(() => {
+                if (gameState.isDead) return;
+                
+                // Decrease stats
+                gameState.fullness = Math.max(0, gameState.fullness - 2);
+                gameState.happiness = Math.max(0, gameState.happiness - 2);
+                gameState.cleanliness = Math.max(0, gameState.cleanliness - 2);
+                
                 saveGame();
                 updateUI();
-            }
+                checkStatus();
+            }, 5000);
         }
         
+        // Update UI
         function updateUI() {
-            const { hunger, happiness, cleanliness, isDead } = gameState;
+            // Update values
+            document.getElementById('fullnessValue').textContent = gameState.fullness;
+            document.getElementById('happinessValue').textContent = gameState.happiness;
+            document.getElementById('cleanlinessValue').textContent = gameState.cleanliness;
             
-            document.getElementById('hungerBar').style.width = hunger + '%';
-            document.getElementById('happinessBar').style.width = happiness + '%';
-            document.getElementById('cleanlinessBar').style.width = cleanliness + '%';
+            // Update bars
+            const fullnessBar = document.getElementById('fullnessBar');
+            const happinessBar = document.getElementById('happinessBar');
+            const cleanlinessBar = document.getElementById('cleanlinessBar');
             
-            document.getElementById('hungerValue').textContent = hunger;
-            document.getElementById('happinessValue').textContent = happiness;
-            document.getElementById('cleanlinessValue').textContent = cleanliness;
+            fullnessBar.style.width = gameState.fullness + '%';
+            happinessBar.style.width = gameState.happiness + '%';
+            cleanlinessBar.style.width = gameState.cleanliness + '%';
             
-            updateStatBarStyle('hungerBar', hunger);
-            updateStatBarStyle('happinessBar', happiness);
-            updateStatBarStyle('cleanlinessBar', cleanliness);
-            
-            updatePetEmoji();
-            updateButtons();
-            updateMessage();
+            // Danger state
+            fullnessBar.classList.toggle('danger', gameState.fullness < 20);
+            happinessBar.classList.toggle('danger', gameState.happiness < 20);
+            cleanlinessBar.classList.toggle('danger', gameState.cleanliness < 20);
         }
         
-        function updateStatBarStyle(barId, value) {
-            const bar = document.getElementById(barId);
-            if (value < 20) {
-                bar.classList.add('low');
-            } else {
-                bar.classList.remove('low');
-            }
-        }
-        
-        function updatePetEmoji() {
-            const pet = document.getElementById('pet');
-            const { hunger, happiness, cleanliness, isDead } = gameState;
+        // Check Pet Status
+        function checkStatus() {
+            statusMessage.className = 'status-message';
             
-            if (isDead) {
-                pet.textContent = '💀';
-                return;
-            }
-            
-            const minStat = Math.min(hunger, happiness, cleanliness);
-            
-            if (minStat < 20) {
-                pet.textContent = '😿';
-            } else if (hunger >= 70 && happiness >= 70 && cleanliness >= 70) {
-                pet.textContent = '😸';
-            } else {
-                pet.textContent = '🐱';
-            }
-        }
-        
-        function updateButtons() {
-            const { isDead } = gameState;
-            const buttons = ['feedBtn', 'playBtn', 'cleanBtn'];
-            const restartBtn = document.getElementById('restartBtn');
-            
-            buttons.forEach(id => {
-                document.getElementById(id).disabled = isDead;
-            });
-            
-            if (isDead) {
+            // Check death
+            if (gameState.fullness === 0 || gameState.happiness === 0 || gameState.cleanliness === 0) {
+                gameState.isDead = true;
+                petEmoji.textContent = '💀';
+                petEmoji.classList.add('dead');
+                actionButtons.style.pointerEvents = 'none';
+                actionButtons.style.opacity = '0.5';
                 restartBtn.classList.add('show');
-            } else {
-                restartBtn.classList.remove('show');
-            }
-        }
-        
-        function updateMessage() {
-            const message = document.getElementById('message');
-            const { hunger, happiness, cleanliness, isDead } = gameState;
-            
-            if (isDead) {
-                message.textContent = '宠物生病了...请重新开始';
-                message.className = 'message status-dead';
+                
+                statusMessage.textContent = '😢 宠物生病了...请重新开始！';
+                statusMessage.classList.add('show', 'dead');
+                
+                if (gameInterval) {
+                    clearInterval(gameInterval);
+                }
+                saveGame();
                 return;
             }
             
-            const minStat = Math.min(hunger, happiness, cleanliness);
+            // Check sad
+            if (gameState.fullness < 20 || gameState.happiness < 20 || gameState.cleanliness < 20) {
+                petEmoji.textContent = getSadEmoji(gameState.petType);
+                petEmoji.classList.add('sad');
+                statusMessage.textContent = '😢 宠物很难过，快照顾它！';
+                statusMessage.classList.add('show', 'warning');
+                return;
+            }
             
-            if (minStat < 20) {
-                message.textContent = '宠物很难过，快照顾它！';
-                message.className = 'message status-sad';
-            } else if (hunger >= 70 && happiness >= 70 && cleanliness >= 70) {
-                message.textContent = '宠物非常开心！';
-                message.className = 'message status-happy';
-            } else {
-                message.textContent = '宠物状态良好';
-                message.className = 'message';
+            // Check happy
+            if (gameState.fullness >= 70 && gameState.happiness >= 70 && gameState.cleanliness >= 70) {
+                petEmoji.textContent = getHappyEmoji(gameState.petType);
+                petEmoji.classList.remove('sad');
+                statusMessage.textContent = '😊 宠物非常开心！';
+                statusMessage.classList.add('show', 'happy');
+                return;
+            }
+            
+            // Normal
+            petEmoji.textContent = gameState.petType;
+            petEmoji.classList.remove('sad');
+            statusMessage.classList.remove('show');
+        }
+        
+        // Get Happy Emoji
+        function getHappyEmoji(pet) {
+            const happyMap = {
+                '🐱': '😺',
+                '🐶': '🐕',
+                '🐰': '🐰',
+                '🐼': '🐼',
+                '🐸': '🐸',
+                '🦊': '🦊'
+            };
+            return happyMap[pet] || pet;
+        }
+        
+        // Get Sad Emoji
+        function getSadEmoji(pet) {
+            const sadMap = {
+                '🐱': '😿',
+                '🐶': '🐶',
+                '🐰': '🐰',
+                '🐼': '🐼',
+                '🐸': '🐸',
+                '🦊': '🦊'
+            };
+            return sadMap[pet] || '😢';
+        }
+        
+        // Feed Pet
+        function feedPet() {
+            if (gameState.isDead) return;
+            gameState.fullness = Math.min(100, gameState.fullness + 20);
+            saveGame();
+            updateUI();
+            checkStatus();
+        }
+        
+        // Play with Pet
+        function playPet() {
+            if (gameState.isDead) return;
+            gameState.happiness = Math.min(100, gameState.happiness + 20);
+            // Playing makes pet a bit dirty
+            gameState.cleanliness = Math.max(0, gameState.cleanliness - 5);
+            saveGame();
+            updateUI();
+            checkStatus();
+        }
+        
+        // Clean Pet
+        function cleanPet() {
+            if (gameState.isDead) return;
+            gameState.cleanliness = Math.min(100, gameState.cleanliness + 20);
+            saveGame();
+            updateUI();
+            checkStatus();
+        }
+        
+        // Restart Game
+        function restartGame() {
+            gameState = {
+                petType: gameState.petType,
+                petName: gameState.petName,
+                fullness: 100,
+                happiness: 100,
+                cleanliness: 100,
+                isDead: false,
+                lastUpdate: Date.now()
+            };
+            
+            petEmoji.classList.remove('dead', 'sad');
+            actionButtons.style.pointerEvents = 'auto';
+            actionButtons.style.opacity = '1';
+            restartBtn.classList.remove('show');
+            
+            saveGame();
+            updateUI();
+            checkStatus();
+            startGameLoop();
+        }
+        
+        // Save Game to LocalStorage
+        function saveGame() {
+            gameState.lastUpdate = Date.now();
+            localStorage.setItem('petGame', JSON.stringify(gameState));
+        }
+        
+        // Load Game from LocalStorage
+        function loadGame() {
+            const saved = localStorage.getItem('petGame');
+            if (saved) {
+                const data = JSON.parse(saved);
+                
+                // Calculate offline time and decrease stats
+                const now = Date.now();
+                const elapsed = now - data.lastUpdate;
+                const decreaseCount = Math.floor(elapsed / 5000);
+                
+                if (decreaseCount > 0 && !data.isDead) {
+                    data.fullness = Math.max(0, data.fullness - decreaseCount * 2);
+                    data.happiness = Math.max(0, data.happiness - decreaseCount * 2);
+                    data.cleanliness = Math.max(0, data.cleanliness - decreaseCount * 2);
+                }
+                
+                gameState = data;
+                
+                if (gameState.petType) {
+                    showGameScreen();
+                    checkStatus();
+                    
+                    if (!gameState.isDead) {
+                        startGameLoop();
+                    }
+                }
             }
         }
         
+        // Initialize on load
         init();
     </script>
 </body>
