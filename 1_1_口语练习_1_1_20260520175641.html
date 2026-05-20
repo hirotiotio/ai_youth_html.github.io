@@ -1,0 +1,588 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>英语单词学习助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .word-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .word-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .word-card.playing {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .word-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .word {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .word-card.playing .word {
+            color: white;
+        }
+
+        .meaning {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .word-card.playing .meaning {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-listen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-listen:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-record {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-record:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-record.recording {
+            animation: pulse 1s infinite;
+            background: #e74c3c;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.listening {
+            display: block;
+            background: #fff3cd;
+            color: #856404;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .play-count {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .word-card.playing .play-count {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .icon {
+            font-size: 18px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        .tip {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .word {
+                font-size: 24px;
+            }
+
+            .meaning {
+                font-size: 16px;
+            }
+
+            .btn {
+                min-width: 100px;
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 英语单词学习助手</h1>
+            <p>点击播放听发音，点击录音开始跟读，系统会自动评分</p>
+        </div>
+
+        <div id="wordList"></div>
+
+        <div class="tip">
+            💡 提示：建议使用Chrome浏览器以获得最佳体验
+        </div>
+    </div>
+
+    <script>
+        // 单词数据
+        const words = [
+            { word: "comment", meaning: "评论, 注释" },
+            { word: "plate", meaning: "盘子, 板块" },
+            { word: "salary", meaning: "工资, 薪水" },
+            { word: "incorrect", meaning: "不正确的, 错误的" },
+            { word: "act", meaning: "行为, 行动, 表演" },
+            { word: "cliff", meaning: "悬崖, 峭壁" },
+            { word: "credit", meaning: "信用, 学分, 荣誉" },
+            { word: "northwest", meaning: "西北, 西北的" },
+            { word: "partial", meaning: "部分的, 偏袒的" },
+            { word: "direct", meaning: "直接的, 指挥" }
+        ];
+
+        let currentPlaying = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recognition = null;
+        let isRecording = false;
+        let currentRecordingWord = null;
+
+        // 初始化页面
+        function init() {
+            const wordList = document.getElementById('wordList');
+            wordList.innerHTML = words.map((item, index) => `
+                <div class="word-card" id="card-${index}">
+                    <div class="word-header">
+                        <span class="word">${item.word}</span>
+                    </div>
+                    <div class="meaning">${item.meaning}</div>
+                    <div class="btn-group">
+                        <button class="btn btn-listen" onclick="playSound(${index})">
+                            <span class="icon">🔊</span> 播放发音
+                        </button>
+                        <button class="btn btn-record" id="record-btn-${index}" onclick="toggleRecord(${index})">
+                            <span class="icon">🎤</span> 开始录音
+                        </button>
+                    </div>
+                    <div class="progress-bar" id="progress-${index}">
+                        <div class="progress-bar-fill" id="progress-fill-${index}"></div>
+                    </div>
+                    <div class="status" id="status-${index}"></div>
+                    <div class="play-count" id="count-${index}">播放次数: 0</div>
+                </div>
+            `).join('');
+
+            // 初始化语音识别
+            initSpeechRecognition();
+        }
+
+        // 初始化语音识别
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript.toLowerCase().trim();
+                    const wordIndex = currentRecordingWord;
+                    const targetWord = words[wordIndex].word.toLowerCase();
+                    
+                    showStatus(wordIndex, transcript, targetWord);
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('语音识别错误:', event.error);
+                    if (wordIndex !== null) {
+                        showRecordStatus(wordIndex, 'error', '识别失败，请重试');
+                    }
+                };
+
+                recognition.onend = function() {
+                    if (isRecording && currentRecordingWord !== null) {
+                        // 继续录音
+                        try {
+                            recognition.start();
+                        } catch(e) {
+                            console.log('重新启动识别失败');
+                        }
+                    }
+                };
+            } else {
+                alert('您的浏览器不支持语音识别功能，建议使用Chrome浏览器');
+            }
+        }
+
+        // 播放发音
+        function playSound(index) {
+            const word = words[index].word;
+            const card = document.getElementById(`card-${index}`);
+            const progressBar = document.getElementById(`progress-${index}`);
+            const progressFill = document.getElementById(`progress-fill-${index}`);
+            const countEl = document.getElementById(`count-${index}`);
+
+            // 移除之前的播放状态
+            if (currentPlaying !== null && currentPlaying !== index) {
+                document.getElementById(`card-${currentPlaying}`).classList.remove('playing');
+            }
+
+            // 添加播放状态
+            card.classList.add('playing');
+            currentPlaying = index;
+            progressBar.classList.add('active');
+
+            let playCount = 0;
+            const maxPlays = 3;
+
+            function speak() {
+                if (playCount < maxPlays) {
+                    const utterance = new SpeechSynthesisUtterance(word);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1;
+
+                    utterance.onstart = function() {
+                        progressFill.style.width = '50%';
+                    };
+
+                    utterance.onend = function() {
+                        playCount++;
+                        progressFill.style.width = '100%';
+                        
+                        if (playCount < maxPlays) {
+                            setTimeout(speak, 500);
+                        } else {
+                            setTimeout(() => {
+                                progressFill.style.width = '0%';
+                                card.classList.remove('playing');
+                                currentPlaying = null;
+                            }, 500);
+                        }
+                    };
+
+                    utterance.onerror = function() {
+                        progressFill.style.width = '0%';
+                        card.classList.remove('playing');
+                        currentPlaying = null;
+                    };
+
+                    speechSynthesis.speak(utterance);
+                }
+            }
+
+            speak();
+
+            // 更新播放次数
+            const currentCount = parseInt(countEl.textContent.replace('播放次数: ', '')) || 0;
+            countEl.textContent = `播放次数: ${currentCount + 1}`;
+        }
+
+        // 切换录音状态
+        async function toggleRecord(index) {
+            const btn = document.getElementById(`record-btn-${index}`);
+            
+            if (!isRecording) {
+                // 开始录音
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = function(event) {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = function() {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        // 可以在这里处理录音数据
+                        console.log('录音完成');
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    currentRecordingWord = index;
+
+                    // 更新UI
+                    btn.classList.add('recording');
+                    btn.innerHTML = '<span class="icon">⏹️</span> 停止录音';
+                    
+                    // 显示录音状态
+                    showRecordStatus(index, 'listening', '🎧 正在听你读...');
+
+                    // 开始语音识别
+                    if (recognition) {
+                        try {
+                            recognition.start();
+                        } catch(e) {
+                            console.log('启动识别失败:', e);
+                        }
+                    }
+
+                } catch (err) {
+                    console.error('获取麦克风失败:', err);
+                    alert('无法访问麦克风，请检查权限设置');
+                }
+            } else {
+                // 停止录音
+                stopRecording();
+            }
+        }
+
+        // 停止录音
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+
+            if (recognition && isRecording) {
+                try {
+                    recognition.stop();
+                } catch(e) {}
+            }
+
+            isRecording = false;
+            currentRecordingWord = null;
+
+            // 更新所有按钮状态
+            document.querySelectorAll('.btn-record').forEach((btn, index) => {
+                btn.classList.remove('recording');
+                btn.innerHTML = '<span class="icon">🎤</span> 开始录音';
+            });
+        }
+
+        // 显示录音状态
+        function showRecordStatus(index, type, message) {
+            const status = document.getElementById(`status-${index}`);
+            status.className = `status ${type}`;
+            status.textContent = message;
+
+            if (type !== 'listening') {
+                setTimeout(() => {
+                    status.className = 'status';
+                    status.textContent = '';
+                }, 3000);
+            }
+        }
+
+        // 显示识别结果并评分
+        function showStatus(index, transcript, targetWord) {
+            const status = document.getElementById(`status-${index}`);
+            const btn = document.getElementById(`record-btn-${index}`);
+            
+            // 计算相似度
+            const similarity = calculateSimilarity(transcript, targetWord);
+            
+            let message = '';
+            let statusType = '';
+
+            if (similarity >= 0.8) {
+                message = `🎉 太棒了！你说的是: "${transcript}"，得分: ${Math.round(similarity * 100)}分 - 非常准确！`;
+                statusType = 'success';
+            } else if (similarity >= 0.5) {
+                message = `👍 不错！你说的是: "${transcript}"，得分: ${Math.round(similarity * 100)}分 - 接近了，继续加油！`;
+                statusType = 'success';
+            } else {
+                message = `💪 需要改进！你说的是: "${transcript}"，得分: ${Math.round(similarity * 100)}分 - 标准发音: "${targetWord}"`;
+                statusType = 'error';
+            }
+
+            status.className = `status ${statusType}`;
+            status.textContent = message;
+
+            // 停止录音
+            stopRecording();
+
+            // 3秒后清除状态
+            setTimeout(() => {
+                status.className = 'status';
+                status.textContent = '';
+            }, 5000);
+        }
+
+        // 计算字符串相似度
+        function calculateSimilarity(str1, str2) {
+            str1 = str1.toLowerCase().trim();
+            str2 = str2.toLowerCase().trim();
+
+            if (str1 === str2) return 1;
+            if (str1.length === 0 || str2.length === 0) return 0;
+
+            const matrix = [];
+
+            for (let i = 0; i <= str1.length; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= str2.length; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= str1.length; i++) {
+                for (let j = 1; j <= str2.length; j++) {
+                    if (str1[i - 1] === str2[j - 1]) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+
+            const distance = matrix[str1.length][str2.length];
+            const maxLength = Math.max(str1.length, str2.length);
+            
+            return 1 - distance / maxLength;
+        }
+
+        // 页面加载完成后初始化
+        window.onload = init;
+
+        // 页面卸载时停止录音
+        window.onbeforeunload = function() {
+            if (isRecording) {
+                stopRecording();
+            }
+        };
+    </script>
+</body>
+</html>
+```
