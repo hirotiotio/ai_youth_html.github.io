@@ -1,0 +1,365 @@
+# 抽奖助手
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽奖助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+        }
+        
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .section h2 {
+            color: #444;
+            margin-bottom: 10px;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+        }
+        
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        .prize-list, .participants-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: #e3e3e3;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+        
+        .tag .remove {
+            cursor: pointer;
+            color: #ff4444;
+            font-weight: bold;
+        }
+        
+        .draw-section {
+            text-align: center;
+        }
+        
+        .draw-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            margin: 10px;
+        }
+        
+        .reset-btn {
+            background: linear-gradient(45deg, #636e72, #2d3436);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+            animation: resultAnim 0.5s ease;
+        }
+        
+        .result h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .winner {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            color: #d63031;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .history {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+        
+        @keyframes resultAnim {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        @media (max-width: 400px) {
+            .container {
+                padding: 12px;
+            }
+            
+            button {
+                padding: 8px 15px;
+                font-size: 13px;
+            }
+            
+            .draw-btn {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎰 抽奖助手 🎰</h1>
+        
+        <div class="section">
+            <h2>🎁 奖品设置</h2>
+            <div class="input-group">
+                <input type="text" id="prizeInput" placeholder="输入奖品名称">
+                <button onclick="addPrize()">添加</button>
+            </div>
+            <div class="prize-list" id="prizeList"></div>
+        </div>
+        
+        <div class="section">
+            <h2>👥 参与者名单</h2>
+            <div class="input-group">
+                <input type="text" id="participantInput" placeholder="输入参与者姓名">
+                <button onclick="addParticipant()">添加</button>
+            </div>
+            <button onclick="batchAddParticipants()" style="background: linear-gradient(45deg, #00b894, #00cec9); margin-top: 10px;">批量添加</button>
+            <textarea id="batchInput" placeholder="批量输入参与者，每行一个"></textarea>
+            <div class="participants-list" id="participantsList"></div>
+        </div>
+        
+        <div class="section draw-section">
+            <button class="draw-btn" onclick="drawWinner()">🎯 开始抽奖</button>
+            <button class="draw-btn reset-btn" onclick="resetAll()">🗑️ 清空数据</button>
+        </div>
+        
+        <div class="result" id="result">
+            <h3>🎊 恭喜中奖 🎊</h3>
+            <div class="winner" id="winner"></div>
+            <div id="prizeWon"></div>
+        </div>
+        
+        <div class="section history">
+            <h2>📋 抽奖历史</h2>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        let prizes = JSON.parse(localStorage.getItem('lottery_prizes')) || [];
+        let participants = JSON.parse(localStorage.getItem('lottery_participants')) || [];
+        let history = JSON.parse(localStorage.getItem('lottery_history')) || [];
+        
+        function saveData() {
+            localStorage.setItem('lottery_prizes', JSON.stringify(prizes));
+            localStorage.setItem('lottery_participants', JSON.stringify(participants));
+            localStorage.setItem('lottery_history', JSON.stringify(history));
+        }
+        
+        function renderPrizes() {
+            const list = document.getElementById('prizeList');
+            list.innerHTML = prizes.map((p, i) => 
+                `<span class="tag">${p} <span class="remove" onclick="removePrize(${i})">×</span></span>`
+            ).join('');
+        }
+        
+        function renderParticipants() {
+            const list = document.getElementById('participantsList');
+            list.innerHTML = participants.map((p, i) => 
+                `<span class="tag">${p} <span class="remove" onclick="removeParticipant(${i})">×</span></span>`
+            ).join('');
+        }
+        
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = history.map(h => 
+                `<div class="history-item">${h.time} - ${h.prize}: ${h.winner}</div>`
+            ).reverse().join('');
+        }
+        
+        function addPrize() {
+            const input = document.getElementById('prizeInput');
+            const value = input.value.trim();
+            if (value) {
+                prizes.push(value);
+                input.value = '';
+                saveData();
+                renderPrizes();
+            }
+        }
+        
+        function removePrize(index) {
+            prizes.splice(index, 1);
+            saveData();
+            renderPrizes();
+        }
+        
+        function addParticipant() {
+            const input = document.getElementById('participantInput');
+            const value = input.value.trim();
+            if (value) {
+                participants.push(value);
+                input.value = '';
+                saveData();
+                renderParticipants();
+            }
+        }
+        
+        function removeParticipant(index) {
+            participants.splice(index, 1);
+            saveData();
+            renderParticipants();
+        }
+        
+        function batchAddParticipants() {
+            const textarea = document.getElementById('batchInput');
+            const names = textarea.value.split('\n').map(n => n.trim()).filter(n => n);
+            participants = [...participants, ...names];
+            textarea.value = '';
+            saveData();
+            renderParticipants();
+        }
+        
+        function drawWinner() {
+            if (prizes.length === 0) {
+                alert('请先添加奖品!');
+                return;
+            }
+            if (participants.length === 0) {
+                alert('请先添加参与者!');
+                return;
+            }
+            
+            const randomPrizeIndex = Math.floor(Math.random() * prizes.length);
+            const randomParticipantIndex = Math.floor(Math.random() * participants.length);
+            
+            const prize = prizes[randomPrizeIndex];
+            const winner = participants[randomParticipantIndex];
+            
+            document.getElementById('winner').textContent = winner;
+            document.getElementById('prizeWon').textContent = `获得: ${prize}`;
+            document.getElementById('result').classList.add('show');
+            
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            
+            history.push({
+                time: timeStr,
+                prize: prize,
+                winner: winner
+            });
+            
+            if (history.length > 50) history.shift();
+            saveData();
+            renderHistory();
+        }
+        
+        function resetAll() {
+            if (confirm('确定要清空所有数据吗？')) {
+                prizes = [];
+                participants = [];
+                history = [];
+                saveData();
+                renderPrizes();
+                renderParticipants();
+                renderHistory();
+                document.getElementById('result').classList.remove('show');
+            }
+        }
+        
+        // 初始化
+        renderPrizes();
+        renderParticipants();
+        renderHistory();
+    </script>
+</body>
+</html>
+```
