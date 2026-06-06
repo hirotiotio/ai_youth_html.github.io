@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小明的魔法城堡</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3, #6e8efb);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .magic-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 
+                        0 0 20px rgba(255, 255, 255, 0.5);
+            max-width: 500px;
+            width: 90%;
+            border: 3px solid #ffd700;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .magic-card::before {
+            content: "";
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border: 3px solid #ff6b6b;
+            border-radius: 22px;
+            z-index: -1;
+            animation: glow 2s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 10px #ff6b6b, 0 0 20px #ff6b6b; }
+            to { box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700; }
+        }
+        
+        h1 {
+            color: #4a00e0;
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .weapon {
+            font-size: 4rem;
+            margin: 20px 0;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .pet-section {
+            margin: 30px 0;
+        }
+        
+        .pet-title {
+            color: #8e2de2;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .pets-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .pet {
+            font-size: 3.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .pet:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        
+        .sparkles {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: sparkle 1.5s infinite;
+        }
+        
+        .sparkle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0.2s; }
+        .sparkle:nth-child(2) { top: 80%; left: 20%; animation-delay: 0.5s; }
+        .sparkle:nth-child(3) { top: 30%; right: 15%; animation-delay: 0.8s; }
+        .sparkle:nth-child(4) { bottom: 25%; right: 10%; animation-delay: 1.1s; }
+        
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+        
+        .footer-text {
+            color: #666;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="magic-card">
+        <!-- 魔法星星装饰 -->
+        <div class="sparkles sparkle"></div>
+        <div class="sparkles sparkle"></div>
+        <div class="sparkles sparkle"></div>
+        <div class="sparkles sparkle"></div>
+        
+        <h1>小明勇士，出发！</h1>
+        
+        <div class="weapon">⚔️</div>
+        
+        <div class="pet-section">
+            <div class="pet-title">召唤魔法宠物</div>
+            <div class="pets-container">
+                <div class="pet">🐉</div>
+                <div class="pet">🐉</div>
+            </div>
+        </div>
+        
+        <div class="footer-text">✨ 魔法卡片生成完毕 ✨</div>
+    </div>
+</body>
+</html>
